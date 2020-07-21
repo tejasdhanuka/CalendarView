@@ -9,7 +9,7 @@
 import UIKit
 import Foundation
 
-class ViewController: UIViewController, CalendarViewDelegate, UICollectionViewDelegate {
+class ViewController: UIViewController, CalendarViewDelegate {
     
     private var calendarView: CalendarView!
     private var weekdaysStackView: UIStackView!
@@ -109,16 +109,18 @@ class ViewController: UIViewController, CalendarViewDelegate, UICollectionViewDe
     }
     
     private func addCalendarView() {
-        calendarView = CalendarView.init(numberOfYears: 2, hidesDatesFromOtherMonth: true, style: calendarStyle).noAutoresizingMask()
+        calendarView = CalendarView.init(numberOfYears: 2, hidesDatesFromOtherMonth: true, disabledBeforeToday: true, style: calendarStyle).noAutoresizingMask()
+        calendarView.calendarDelegate = self
+        let selectedDates: CalendarView.Selection = CalendarView.Selection(startDate: Date(), endDate: Date())
+        calendarView.setDateSelection(selectedDates)
         view.addSubview(calendarView)
-        calendarView.delegate = self
         let layoutGuide = view.safeAreaLayoutGuide
 
         NSLayoutConstraint.activate([
             calendarView.topAnchor.constraint(equalTo: weekdaysStackView.bottomAnchor),
             calendarView.leftAnchor.constraint(equalTo: layoutGuide.leftAnchor, constant: 8.0),
             calendarView.rightAnchor.constraint(equalTo: layoutGuide.rightAnchor, constant: -8.0),
-            calendarView.bottomAnchor.constraint(equalTo: layoutGuide.bottomAnchor, constant: -8.0),
+            calendarView.heightAnchor.constraint(equalToConstant: 350)
         ])
     }
     
