@@ -31,6 +31,7 @@ class CalendarHeader: UICollectionReusableView {
     }
     func setupStyle(style: CalendarHeaderStyle) {
         self.style = style
+        self.backgroundColor = UIColor.lightGray
         label.font = style.font
         label.textColor = style.textColor
     }

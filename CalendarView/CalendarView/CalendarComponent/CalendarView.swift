@@ -150,7 +150,6 @@ extension CalendarView: UICollectionViewDataSource {
         let daysInIncompleteWeek = numberOfDaysWithPreviousMonth % 7
         
         let numberOfItemsInSection = daysInIncompleteWeek == 0 ? numberOfDaysWithPreviousMonth : numberOfDaysWithPreviousMonth + 7 - daysInIncompleteWeek
-        print(numberOfItemsInSection)
         return numberOfItemsInSection
     }
     
