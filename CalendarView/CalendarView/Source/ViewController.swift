@@ -27,7 +27,7 @@ class ViewController: UIViewController, CalendarViewDelegate {
         let cellStyler = DefaultCalendarCellStyler(style: cellStyle)
         let headerStyle = CalendarHeaderStyle(textColor: UIColor.red,
                                               font: UIFont.systemFont(ofSize: 10),
-                                              dateFormatter: DateFormatter())
+                                              dateFormatter: LocalizedDateFormatter.middle([.year, .month]))
         let style = CalendarViewStyle(calendarCellStyler: cellStyler,
                                       calendarHeaderStyle: headerStyle,
                                       cellSize: nil)
@@ -120,7 +120,7 @@ class ViewController: UIViewController, CalendarViewDelegate {
             calendarView.topAnchor.constraint(equalTo: weekdaysStackView.bottomAnchor),
             calendarView.leftAnchor.constraint(equalTo: layoutGuide.leftAnchor, constant: 8.0),
             calendarView.rightAnchor.constraint(equalTo: layoutGuide.rightAnchor, constant: -8.0),
-            calendarView.heightAnchor.constraint(equalToConstant: 350)
+            calendarView.bottomAnchor.constraint(equalTo: layoutGuide.bottomAnchor, constant: -8.0)
         ])
     }
     
