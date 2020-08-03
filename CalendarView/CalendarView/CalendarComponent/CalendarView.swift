@@ -13,14 +13,19 @@ public protocol CalendarViewDelegate: AnyObject {
     func calendarDidChangeSelection(_ selection: CalendarView.Selection)
 }
 
+public enum CalendarDateSelectionStyle {
+    case single
+    case range
+}
+
 public struct CalendarViewStyle {
     let calendarCellStyler: CalendarCellStyler
     let calendarHeaderStyle: CalendarHeaderStyle
     let cellSize: CGFloat?
     
     public init(calendarCellStyler: CalendarCellStyler,
-        calendarHeaderStyle: CalendarHeaderStyle,
-        cellSize: CGFloat?) {
+                calendarHeaderStyle: CalendarHeaderStyle,
+                cellSize: CGFloat?) {
         self.calendarCellStyler = calendarCellStyler
         self.calendarHeaderStyle = calendarHeaderStyle
         self.cellSize = cellSize
@@ -28,12 +33,13 @@ public struct CalendarViewStyle {
 }
 
 public class CalendarView: UICollectionView {
+    
     public struct Selection: Hashable {
         public var startDate: Date?
         public var endDate: Date?
         
         public init(startDate: Date? = Date(),
-            endDate: Date? = Date()) {
+                    endDate: Date? = Date()) {
             self.startDate = startDate
             self.endDate = endDate
         }
@@ -45,10 +51,11 @@ public class CalendarView: UICollectionView {
     let headerIdentifier = "HeaderIdentifier"
     let startYear: Int
     let startMonth: Int
-    let numberOfYears: Int
+    let numberOfMonths: Int
     let startDate: Date
     let hidesDatesFromOtherMonth: Bool
     let disabledBeforeToday: Bool
+    let dateSelectionStyle: CalendarDateSelectionStyle
     public private(set) var selection = Selection()
     let today = Date().dateWithoutTime()
     let style: CalendarViewStyle?
@@ -60,14 +67,22 @@ public class CalendarView: UICollectionView {
     
     // MARK: - Init
     
-    public init(startYear: Int? = nil, startMonth: Int? = nil, numberOfYears: Int = 1, hidesDatesFromOtherMonth: Bool = false, disabledBeforeToday: Bool = true, style: CalendarViewStyle? = nil) {
+    public init(startYear: Int? = nil,
+                startMonth: Int? = nil,
+                numberOfMonths: Int = 1,
+                hidesDatesFromOtherMonth: Bool = false,
+                disabledBeforeToday: Bool = true,
+                style: CalendarViewStyle? = nil,
+                dateSelectionStyle: CalendarDateSelectionStyle = .single) {
+        
         self.startYear = startYear ?? CalendarView.currentYear
         self.startMonth = startMonth ?? CalendarView.currentMonth
-        self.numberOfYears = numberOfYears
+        self.numberOfMonths = numberOfMonths
         self.startDate = Date(year: self.startYear, month: self.startMonth, day: 1)
         self.hidesDatesFromOtherMonth = hidesDatesFromOtherMonth
         self.disabledBeforeToday = disabledBeforeToday
         self.style = style
+        self.dateSelectionStyle = dateSelectionStyle
         
         let layout = UICollectionViewFlowLayout()
         let cellSize = style?.cellSize ?? (UIScreen.main.bounds.width / 7 - 20)
@@ -141,7 +156,7 @@ public class CalendarView: UICollectionView {
 
 extension CalendarView: UICollectionViewDataSource {
     public func numberOfSections(in collectionView: UICollectionView) -> Int {
-        numberOfYears * 12 - (startMonth - 1)
+        numberOfMonths
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -239,28 +254,38 @@ extension CalendarView: UICollectionViewDataSource {
 
 extension CalendarView: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? CalendarCell, cell.isSelectable else {
-            return
-        }
         
         let date = dateForIndexPath(indexPath)
-        if selection.startDate == nil {
-            selection.startDate = date
-        } else if selection.endDate != nil {
-            selection.startDate = date
-            selection.endDate = nil
-        } else {
-            if let selectedStartDate = selection.startDate?.dateWithoutTime() {
-                if date < selectedStartDate {
-                    selection.startDate = date
-                } else if date == selectedStartDate {
-                    return
-                }
-                else {
-                    selection.endDate = date
+        
+        switch dateSelectionStyle {
+        
+        case .range:
+            guard let cell = collectionView.cellForItem(at: indexPath) as? CalendarCell, cell.isSelectable else {
+                return
+            }
+            
+            if selection.startDate == nil {
+                selection.startDate = date
+            } else if selection.endDate != nil {
+                selection.startDate = date
+                selection.endDate = nil
+            } else {
+                if let selectedStartDate = selection.startDate?.dateWithoutTime() {
+                    if date < selectedStartDate {
+                        selection.startDate = date
+                    } else if date == selectedStartDate {
+                        return
+                    }
+                    else {
+                        selection.endDate = date
+                    }
                 }
             }
+            
+        case .single:
+            selection.startDate = date
         }
+        
         reloadData()
         calendarDelegate?.calendarDidChangeSelection(selection)
     }
